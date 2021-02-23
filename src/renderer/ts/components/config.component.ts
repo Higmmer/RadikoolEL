@@ -16,8 +16,8 @@ import {Utility} from "../utility";
                     <button type="button" class="button" (click)="isOpenForm = true" *ngIf="!isLogin && !isOpenForm">ログイン</button>
                     <button type="button" class="button" (click)="isOpenForm = true" *ngIf="isLogin && !isOpenForm">ログアウト</button>
                     <button type="button" class="button" (click)="onClickCloseForm()" *ngIf="isOpenForm">閉じる</button>
-                    <iframe src="http://radiko.jp/" style="width:100%; height: 300px;" *ngIf="isOpenForm && isLogin"></iframe>
-                    <iframe src="https://radiko.jp/ap/member/login/login_page" style="width:100%; height: 300px;" *ngIf="isOpenForm && !isLogin"></iframe>
+                    <webview src="https://radiko.jp/" style="width:100%; height:80%;" *ngIf="isOpenForm && isLogin"></webview>
+                    <webview src="https://radiko.jp/ap/member/login/login_page" style="width:100%; height:80%;" *ngIf="isOpenForm && !isLogin"></webview>
                 </div>
             </div>
             <div class="message">

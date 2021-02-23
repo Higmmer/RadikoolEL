@@ -17,7 +17,8 @@ function createWindow () {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            enableRemoteModule: true
+            enableRemoteModule: true,
+            webviewTag: true
         }
     });
     //mainWindow.webContents.openDevTools();

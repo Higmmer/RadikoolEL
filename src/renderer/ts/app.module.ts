@@ -15,6 +15,7 @@ import { Setting              } from './setting';
 import { PlayerComponent      } from './components/player.component';
 import { StateService         } from './services/state.service';
 import {LibraryService} from "./services/library.service";
+import {WebViewDirective} from "./directive/webview.directive";
 
 
 @NgModule({
@@ -24,7 +25,8 @@ import {LibraryService} from "./services/library.service";
         ProgramListComponent,
         ConfigComponent,
         LibraryComponent,
-        PlayerComponent
+        PlayerComponent,
+        WebViewDirective
     ],
     imports: [
         BrowserModule,
