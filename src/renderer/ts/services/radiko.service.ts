@@ -80,7 +80,12 @@ export class RadikoService{
         headers.append("X-Radiko-User", "test-stream");
         headers.append("X-Radiko-Device", "pc");
 
-        this.http.post('https://radiko.jp/v2/api/auth1_fms', {}, {headers: headers}).subscribe(res =>{
+        this.http.post('https://radiko.jp/v2/api/auth1_fms', {}, {headers: headers})
+        .catch(() =>{
+            callback("");
+            return Observable.throw('error');
+        })
+        .subscribe(res =>{
             let token = res.headers.get('x-radiko-authtoken');
             let length = parseInt(res.headers.get('x-radiko-keylength'), 10);
             let offset = parseInt(res.headers.get('x-radiko-keyoffset'), 10);
@@ -107,7 +112,11 @@ export class RadikoService{
                         headers.append("X-Radiko-Device", "pc");
                         headers.append("X-Radiko-AuthToken", token);
                         headers.append("X-Radiko-Partialkey", partial_key);
-                        this.http.post('https://radiko.jp/v2/api/auth2_fms', {}, { headers: headers }).subscribe(res =>{
+                        this.http.post('https://radiko.jp/v2/api/auth2_fms', {}, { headers: headers })
+                        .catch(() =>{
+                            callback("");
+                            return Observable.throw('error');
+                        }).subscribe(res =>{
                             callback(token);
                         });
                     });
@@ -123,6 +132,12 @@ export class RadikoService{
      */
     public getTimeFree = (stationId: string, program:IProgram, saveDir:string, progress, callback) => {
         this.getToken((token) => {
+            if(!token){
+                alert('トークンの取得に失敗しました');
+                callback();
+                return;
+            }
+
             let headers = new Headers();
             headers.append('pragma', 'no-cache');
             headers.append('X-Radiko-AuthToken', token);
