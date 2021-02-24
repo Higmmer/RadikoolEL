@@ -75,12 +75,12 @@ export class RadikoService{
     public getToken = (callback) =>{
         let headers = new Headers();
 
-        headers.append("X-Radiko-App", "pc_ts");
-        headers.append("X-Radiko-App-Version", "4.0.0");
-        headers.append("X-Radiko-User", "test-stream");
+        headers.append("X-Radiko-App", "pc_html5");
+        headers.append("X-Radiko-App-Version", "0.0.1");
+        headers.append("X-Radiko-User", "dummy_user");
         headers.append("X-Radiko-Device", "pc");
 
-        this.http.post('https://radiko.jp/v2/api/auth1_fms', {}, {headers: headers})
+        this.http.get('https://radiko.jp/v2/api/auth1', {headers: headers})
         .catch(() =>{
             callback("");
             return Observable.throw('error');
@@ -90,37 +90,23 @@ export class RadikoService{
             let length = parseInt(res.headers.get('x-radiko-keylength'), 10);
             let offset = parseInt(res.headers.get('x-radiko-keyoffset'), 10);
 
-            var fs = require('fs');
-            var request = require('request');
+            let auth_key = "bcd151073c03b352e1ef2fd66c32209da9ca0afa";
+            let partial_key = btoa(auth_key.substr(offset, length));
 
-            this.getSwf(swf => {
-                var spawn = require('child_process').spawn;
-
-                this.swfextract = spawn(Path.join(libDir, 'swfextract'), ['-b', '12', swf, '-o', Path.join('tmp', 'image.png')]);
-                this.swfextract.on('exit', () => {
-                    fs.open('tmp/image.png', 'r', (err, fd) => {
-
-                        var buffer = new Buffer(length);
-                        fs.readSync(fd, buffer, 0, length, offset);
-                        let partial_key = buffer.toString('base64');
-
-                        let headers = new Headers();
-                        headers.append("pragma", "no-cache");
-                        headers.append("X-Radiko-App", "pc_ts");
-                        headers.append("X-Radiko-App-Version", "4.0.0");
-                        headers.append("X-Radiko-User", "test-stream");
-                        headers.append("X-Radiko-Device", "pc");
-                        headers.append("X-Radiko-AuthToken", token);
-                        headers.append("X-Radiko-Partialkey", partial_key);
-                        this.http.post('https://radiko.jp/v2/api/auth2_fms', {}, { headers: headers })
-                        .catch(() =>{
-                            callback("");
-                            return Observable.throw('error');
-                        }).subscribe(res =>{
-                            callback(token);
-                        });
-                    });
-                });
+            let headers = new Headers();
+            headers.append("pragma", "no-cache");
+            headers.append("X-Radiko-App", "pc_html5");
+            headers.append("X-Radiko-App-Version", "0.0.1");
+            headers.append("X-Radiko-User", "dummy_user");
+            headers.append("X-Radiko-Device", "pc");
+            headers.append("X-Radiko-AuthToken", token);
+            headers.append("X-Radiko-Partialkey", partial_key);
+            this.http.get('https://radiko.jp/v2/api/auth2', { headers: headers })
+            .catch(() =>{
+                callback("");
+                return Observable.throw('error');
+            }).subscribe(res =>{
+                callback(token);
             });
         });
     };
@@ -154,7 +140,7 @@ export class RadikoService{
             }
 
             let duration = Utility.getDuration(program.ft, program.to);
-            this.http.post('https://radiko.jp/v2/api/ts/playlist.m3u8?station_id=' + stationId + '&ft=' + program.ft + '&to=' + program.to, {}, {headers: headers})
+            this.http.get('https://radiko.jp/v2/api/ts/playlist.m3u8?station_id=' + stationId + '&ft=' + program.ft + '&to=' + program.to, {headers: headers})
                 .catch(res =>{
                     alert('m3u8の取得に失敗しました\nタイムフリー対象外の可能性があります');
                     callback();
@@ -216,34 +202,6 @@ export class RadikoService{
         if(this.ffmpeg){
             this.ffmpeg.kill();
             this.ffmpeg = null;
-        }
-    };
-
-
-    /**
-     * swf取得
-     * @param callback
-     */
-    private getSwf = (callback) =>{
-        let swf = Path.join('tmp', 'player.swf');
-
-        let fs = require('fs');
-        try {
-            fs.accessSync(swf);
-            callback(swf);
-
-        } catch (e){
-            // 無ければ取得
-            this.http.get('http://radiko.jp/apps/js/flash/myplayer-release.swf', {responseType: ResponseContentType.Blob,}).subscribe(res =>{
-                let reader = new FileReader();
-                reader.onload = function () {
-                    let fs = require('fs');
-                    fs.writeFileSync(swf, new Buffer(new Uint8Array(reader.result)));
-
-                    callback(swf);
-                };
-                reader.readAsArrayBuffer(res.blob());
-            });
         }
     };
 }
